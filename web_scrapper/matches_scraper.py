@@ -8,7 +8,7 @@ from web_scrapper.web_scraper import WebScraper
 from bs4 import BeautifulSoup, Tag
 
 
-class MatchScraper:
+class MatchesScraper:
     def __init__(self, league_id: int):
         self.league_id = league_id
         self._league = None
@@ -33,7 +33,10 @@ class MatchScraper:
     @wait_until(timeout=10)
     def _get_match_from_tr(self, tr_element: Tag):
         cells = tr_element.find_all('td')
-        date = datetime.datetime.strptime(cells[0].text, "%d.%m.%Y %H:%M")
+        try:
+            date = datetime.datetime.strptime(cells[0].text, "%d.%m.%Y %H:%M")
+        except ValueError:
+            date = None
         home_team = Team.create_team_from_cell(cells[1].find('a'))
         away_team = Team.create_team_from_cell(cells[1].find_all('a')[1])
         match_href = cells[2].find('a')
@@ -46,3 +49,4 @@ class MatchScraper:
             completed = True
         return Match(date=date, home_team=home_team, away_team=away_team, home_score=home_score,
                      away_score=away_score, url=match_url, league_id=self.league_id, completed=completed)
+
