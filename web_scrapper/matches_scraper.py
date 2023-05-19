@@ -3,6 +3,7 @@ import datetime
 from utils import wait_until
 from web_scrapper.models.league import League
 from web_scrapper.models.match import Match
+from web_scrapper.models.season import Season
 from web_scrapper.models.team import Team
 from web_scrapper.web_scraper import WebScraper
 from bs4 import BeautifulSoup, Tag
@@ -16,7 +17,7 @@ class MatchesScraper:
 
     @property
     def league(self):
-        if self.league is None:
+        if self._league is None:
             league_name = self.page.find('button', class_='more-game').text
             self._league = League(id=self.league_id, name=league_name)
         return self._league
@@ -35,8 +36,10 @@ class MatchesScraper:
         cells = tr_element.find_all('td')
         try:
             date = datetime.datetime.strptime(cells[0].text, "%d.%m.%Y %H:%M")
+            season = Season.get_season_by_date(date)
         except ValueError:
             date = None
+            season = None
         home_team = Team.create_team_from_cell(cells[1].find('a'))
         away_team = Team.create_team_from_cell(cells[1].find_all('a')[1])
         match_href = cells[2].find('a')
@@ -48,5 +51,4 @@ class MatchesScraper:
             home_score, away_score = [int(sc) for sc in score.split(':')]
             completed = True
         return Match(date=date, home_team=home_team, away_team=away_team, home_score=home_score,
-                     away_score=away_score, url=match_url, league_id=self.league_id, completed=completed)
-
+                     away_score=away_score, url=match_url, league_id=self.league_id, completed=completed, season=season)

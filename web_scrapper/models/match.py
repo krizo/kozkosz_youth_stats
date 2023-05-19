@@ -1,6 +1,7 @@
 import datetime
 from dataclasses import dataclass
 
+from web_scrapper.models.season import Season
 from web_scrapper.models.team import Team
 
 
@@ -14,3 +15,4 @@ class Match:
     url: str
     league_id: int
     completed: bool
+    season: Season
